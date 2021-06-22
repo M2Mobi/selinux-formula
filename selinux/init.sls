@@ -100,7 +100,7 @@ resetifmissing_{{ k }}:
     - name: rm -f /etc/selinux/src/{{ v_name }}.te
     - require:
       - pkg: selinux
-    - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
+    - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
 
 policy_{{ k }}:
   file:
@@ -121,7 +121,7 @@ checkmodule_{{ k }}:
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
       - pkg: selinux
-    - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
+    - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
 
 create_package_{{ k }}:
   cmd:
@@ -131,7 +131,7 @@ create_package_{{ k }}:
       - file: /etc/selinux/src/{{ v_name }}.te
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
-    - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
+    - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
 
 install_semodule_{{ k }}:
   cmd:
@@ -141,7 +141,7 @@ install_semodule_{{ k }}:
       - file: /etc/selinux/src/{{ v_name }}.te
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
-    - unless: if [ "$(semodule -l | awk '{ print $1 }' | grep {{ v_name }} )" == "{{ v_name }}" ]; then /bin/true; else /bin/false; fi
+    - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
 
 {% endfor %}
 
