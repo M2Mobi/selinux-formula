@@ -105,34 +105,29 @@ policy_{{ k }}:
 
 
 checkmodule_{{ k }}:
-  cmd:
-    - wait
+  cmd.run:
     - name: checkmodule -M -m -o {{ v_name }}.mod /etc/selinux/src/{{ v_name }}.te
-    - watch:
-      - file: /etc/selinux/src/{{ v_name }}.te
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
       - pkg: selinux
     - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
 
 create_package_{{ k }}:
-  cmd:
-    - wait
+  cmd.run:
     - name: semodule_package -m {{ v_name }}.mod -o {{ v_name }}.pp
-    - watch:
-      - file: /etc/selinux/src/{{ v_name }}.te
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
+      - cmd: checkmodule_{{ k }}
+      - pkg: selinux
     - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
 
 install_semodule_{{ k }}:
-  cmd:
-    - wait
+  cmd.run:
     - name: semodule -i {{ v_name }}.pp
-    - watch:
-      - file: /etc/selinux/src/{{ v_name }}.te
     - require:
       - file: /etc/selinux/src/{{ v_name }}.te
+      - cmd: create_package_{{ k }}
+      - pkg: selinux
     - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
 
 {% endfor %}
