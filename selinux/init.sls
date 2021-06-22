@@ -76,7 +76,9 @@ selinux_fcontext_{{ file }}:
   cmd:
     - run
     - name: if (/usr/sbin/semanage fcontext --list | grep "^{{ file }}"); then /usr/sbin/semanage fcontext -m {{ ' '.join(parameters) }} "{{ file }}"; else /usr/sbin/semanage fcontext -a {{ ' '.join(parameters) }} "{{ file }}" ; fi
+{% if 'user' in config and 'type' in config %}
     - unless: (/usr/sbin/semanage fcontext --list | grep "^{{ file }}"|grep -E "{{ config.user }}:(.*)?{{ config.type }}")
+{% endif %}
     - require:
       - pkg: selinux
 {% endfor %}
