@@ -94,14 +94,6 @@ selinux_fcontext_{{ file }}_absent:
 {% for k, v in salt['pillar.get']('selinux:modules', {}).items() %}
   {% set v_name = v.name|default(k) %}
 
-resetifmissing_{{ k }}:
-  cmd:
-    - run
-    - name: rm -f /etc/selinux/src/{{ v_name }}.te
-    - require:
-      - pkg: selinux
-    - unless: if [ "$(semodule -l | grep {{ v_name }} | awk '{ print $2 }')" = "$(grep {{ v_name }} /etc/selinux/src/{{ v_name }}.te | tr -d ';' | awk '{ print $3 }')" ]; then /bin/true; else /bin/false; fi
-
 policy_{{ k }}:
   file:
     - managed
